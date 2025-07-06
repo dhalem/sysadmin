@@ -4,5 +4,3 @@ kuma_retry_interval: 60
 kuma_max_retries: 2
 kuma_admin_username: '{{ vault_kuma_admin_username }}'
 kuma_admin_password: '{{ vault_kuma_admin_password }}'
-kuma_heartbeat_script_path: /home/dhalem/kuma-heartbeat.sh
-kuma_log_file: /home/dhalem/kuma-heartbeat.log

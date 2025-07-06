@@ -1,8 +1,10 @@
 - name: Deploy Kuma monitoring to all hosts
-  hosts: kuma_monitors
+  hosts: kuma_monitors:synology_nas:proxmox_hosts
   become: false
+  become_method: sudo
+  become_flags: -n
   roles:
-  - kuma-monitoring
+  - role: ../roles/internal/kuma-monitoring
   tags:
   - monitoring
   - kuma

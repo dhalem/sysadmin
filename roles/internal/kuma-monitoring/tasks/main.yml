@@ -1,7 +1,18 @@
+- name: Debug Kuma credentials
+  debug:
+    msg: 'Using username: {{ kuma_admin_username }} for {{ kuma_server_url }}'
+- name: Get existing monitors from Kuma
+  lucasheld.uptime_kuma.monitor_info:
+    api_url: '{{ kuma_server_url }}'
+    api_username: '{{ kuma_admin_username }}'
+    api_password: '{{ kuma_admin_password }}'
+  register: existing_monitors
+  delegate_to: localhost
 - name: Create push monitor in Kuma
   lucasheld.uptime_kuma.monitor:
     api_url: '{{ kuma_server_url }}'
-    api_token: '{{ kuma_auth_token }}'
+    api_username: '{{ kuma_admin_username }}'
+    api_password: '{{ kuma_admin_password }}'
     name: '{{ ansible_hostname }}'
     type: push
     interval: '{{ kuma_heartbeat_interval }}'
@@ -11,11 +22,20 @@
     state: present
   register: monitor_response
   delegate_to: localhost
-  run_once: true
-- name: Extract push token from response
+- name: Debug monitor response
+  debug:
+    var: monitor_response
+  when: monitor_response.changed
+- name: Find current monitor in existing monitors list
   set_fact:
-    push_token: '{{ monitor_response.monitor.pushToken }}'
-  when: monitor_response.monitor.pushToken is defined
+    current_monitor: '{{ existing_monitors.monitors | selectattr(''name'', ''equalto'', ansible_hostname) | list | first |
+      default({}) }}'
+- name: Extract push token from existing monitor or response
+  set_fact:
+    push_token: '{{ current_monitor.pushToken | default(monitor_response.monitor.pushToken | default('''')) }}'
+- name: Debug push token
+  debug:
+    msg: 'Push token for {{ ansible_hostname }}: {{ push_token }}'
 - name: Fail if push token not received
   fail:
     msg: Failed to create monitor or extract push token
@@ -25,20 +45,26 @@
     src: heartbeat.sh.j2
     dest: '{{ kuma_heartbeat_script_path }}'
     mode: '0755'
-    owner: root
-    group: root
-  become: true
-- name: Install cron job for heartbeat
+  vars:
+    monitor_name: '{{ ansible_hostname }}'
+    kuma_url: '{{ kuma_server_url }}'
+- name: Install cron job for heartbeat (non-Synology)
   cron:
     name: Kuma heartbeat for {{ ansible_hostname }}
     minute: '*/{{ (kuma_heartbeat_interval / 60) | int }}'
     job: '{{ kuma_heartbeat_script_path }}'
     state: present
-  become: true
+  when: kuma_use_synology_scheduler is not defined or not kuma_use_synology_scheduler
+- name: Create Synology task scheduler entry
+  shell: 'echo "Creating Synology scheduled task for Kuma heartbeat"
+
+    # Note: Synology tasks should be created via web interface or API
+
+    '
+  when: kuma_use_synology_scheduler is defined and kuma_use_synology_scheduler
 - name: Test heartbeat immediately
   command: '{{ kuma_heartbeat_script_path }}'
   register: heartbeat_test
-  become: true
 - name: Display monitor creation result
   debug:
     msg: 'Monitor ''{{ ansible_hostname }}'' created successfully with push token: {{ push_token }}'

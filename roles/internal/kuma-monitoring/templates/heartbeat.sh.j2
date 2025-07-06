@@ -11,7 +11,7 @@ curl -s -o /dev/null -w "%{http_code}" "${KUMA_URL}/api/push/${PUSH_TOKEN}" > /t
 
 # Log the result
 if [ $? -eq 0 ]; then
-    echo "$(date): Heartbeat sent successfully from ${HOSTNAME}" >> /var/log/kuma-heartbeat.log
+    echo "$(date): Heartbeat sent successfully from ${HOSTNAME}" >> {{ kuma_log_file }}
 else
-    echo "$(date): Failed to send heartbeat from ${HOSTNAME}" >> /var/log/kuma-heartbeat.log
+    echo "$(date): Failed to send heartbeat from ${HOSTNAME}" >> {{ kuma_log_file }}
 fi

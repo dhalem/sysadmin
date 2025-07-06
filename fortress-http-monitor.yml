@@ -1,0 +1,34 @@
+- name: Configure HTTP monitoring for fortress
+  hosts: localhost
+  gather_facts: false
+  vars:
+    kuma_url: http://networkbot:3001
+    kuma_admin_username: '{{ vault_kuma_admin_username }}'
+    kuma_admin_password: '{{ vault_kuma_admin_password }}'
+  tasks:
+  - name: Remove push monitor for fortress
+    lucasheld.uptime_kuma.monitor:
+      api_url: '{{ kuma_url }}'
+      api_username: '{{ kuma_admin_username }}'
+      api_password: '{{ kuma_admin_password }}'
+      name: fortress
+      state: absent
+    ignore_errors: true
+  - name: Create HTTP monitor for fortress
+    lucasheld.uptime_kuma.monitor:
+      api_url: '{{ kuma_url }}'
+      api_username: '{{ kuma_admin_username }}'
+      api_password: '{{ kuma_admin_password }}'
+      name: fortress
+      type: http
+      url: http://fortress:5000/
+      interval: 60
+      retryInterval: 60
+      maxretries: 2
+      accepted_statuscodes:
+      - 200-299
+      state: present
+    register: monitor_response
+  - name: Display result
+    debug:
+      msg: HTTP monitor for fortress created successfully
