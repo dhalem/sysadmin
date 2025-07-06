@@ -1,0 +1,8 @@
+- name: Deploy Kuma monitoring to all hosts
+  hosts: kuma_monitors
+  become: false
+  roles:
+  - kuma-monitoring
+  tags:
+  - monitoring
+  - kuma

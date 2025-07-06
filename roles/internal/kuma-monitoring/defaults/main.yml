@@ -1,0 +1,6 @@
+kuma_server_url: http://networkbot:3001
+kuma_heartbeat_interval: 300
+kuma_retry_interval: 60
+kuma_max_retries: 2
+kuma_heartbeat_script_path: /usr/local/bin/kuma-heartbeat.sh
+kuma_log_file: /var/log/kuma-heartbeat.log

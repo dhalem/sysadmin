@@ -1,0 +1,50 @@
+all:
+  children:
+    kuma_monitors:
+      hosts:
+        tahoepi1:
+          ansible_host: tahoepi1
+          ansible_user: dhalem
+        tahoepi2:
+          ansible_host: tahoepi2
+          ansible_user: dhalem
+        plexvan:
+          ansible_host: plexvan
+          ansible_user: dhalem
+        networkbot:
+          ansible_host: networkbot
+          ansible_user: dhalem
+        arrbot:
+          ansible_host: arrbot
+          ansible_user: dhalem
+        devbot:
+          ansible_host: devbot
+          ansible_user: dhalem
+        musicbot:
+          ansible_host: musicbot
+          ansible_user: dhalem
+        videobot:
+          ansible_host: videobot
+          ansible_user: dhalem
+    synology_nas:
+      hosts:
+        forge:
+          ansible_host: forge
+          ansible_user: dhalem
+        fortress:
+          ansible_host: fortress
+          ansible_user: dhalem
+    proxmox_hosts:
+      hosts:
+        prox1:
+          ansible_host: prox1
+          ansible_user: dhalem
+        prox2:
+          ansible_host: prox2
+          ansible_user: dhalem
+        prox3:
+          ansible_host: prox3
+          ansible_user: dhalem
+      vars:
+        kuma_server_url: http://networkbot:3001
+        kuma_admin_username: admin

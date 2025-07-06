@@ -1,0 +1,44 @@
+- name: Create push monitor in Kuma
+  lucasheld.uptime_kuma.monitor:
+    api_url: '{{ kuma_server_url }}'
+    api_token: '{{ kuma_auth_token }}'
+    name: '{{ ansible_hostname }}'
+    type: push
+    interval: '{{ kuma_heartbeat_interval }}'
+    retryInterval: '{{ kuma_retry_interval }}'
+    maxretries: '{{ kuma_max_retries }}'
+    notificationIDList: '{{ kuma_notification_ids | default([]) }}'
+    state: present
+  register: monitor_response
+  delegate_to: localhost
+  run_once: true
+- name: Extract push token from response
+  set_fact:
+    push_token: '{{ monitor_response.monitor.pushToken }}'
+  when: monitor_response.monitor.pushToken is defined
+- name: Fail if push token not received
+  fail:
+    msg: Failed to create monitor or extract push token
+  when: push_token is not defined
+- name: Create heartbeat script
+  template:
+    src: heartbeat.sh.j2
+    dest: '{{ kuma_heartbeat_script_path }}'
+    mode: '0755'
+    owner: root
+    group: root
+  become: true
+- name: Install cron job for heartbeat
+  cron:
+    name: Kuma heartbeat for {{ ansible_hostname }}
+    minute: '*/{{ (kuma_heartbeat_interval / 60) | int }}'
+    job: '{{ kuma_heartbeat_script_path }}'
+    state: present
+  become: true
+- name: Test heartbeat immediately
+  command: '{{ kuma_heartbeat_script_path }}'
+  register: heartbeat_test
+  become: true
+- name: Display monitor creation result
+  debug:
+    msg: 'Monitor ''{{ ansible_hostname }}'' created successfully with push token: {{ push_token }}'

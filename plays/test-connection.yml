@@ -1,0 +1,10 @@
+- name: Test SSH Connection to tahoepi1
+  hosts: tahoepi1
+  gather_facts: false
+  tasks:
+  - name: Test ping
+    ping: null
+    register: ping_result
+  - name: Show result
+    debug:
+      msg: Connection successful to {{ inventory_hostname }}
