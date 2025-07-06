@@ -5,6 +5,7 @@ venv/
 # Ansible
 *.retry
 .ansible/
+.vault_pass
 
 # Python
 __pycache__/

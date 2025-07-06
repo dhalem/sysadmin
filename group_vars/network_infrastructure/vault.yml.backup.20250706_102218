@@ -1,0 +1,4 @@
+vault_unifi_username: admin
+vault_unifi_password: CHANGE_ME
+vault_pfsense_user: admin
+vault_pfsense_password: CHANGE_ME

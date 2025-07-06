@@ -5,7 +5,6 @@
   vars:
     unifi_username: '{{ vault_unifi_username | default('''') }}'
     unifi_password: '{{ vault_unifi_password | default('''') }}'
-    unifi_url: '{{ unifi_url }}'
     unifi_validate_certs: false
   tasks:
   - name: Test UniFi API login

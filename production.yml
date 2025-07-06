@@ -30,7 +30,7 @@ all:
       hosts:
         forge:
           ansible_host: forge
-          ansible_user: dhalem
+          ansible_user: adminadmin
         fortress:
           ansible_host: fortress
           ansible_user: dhalem
@@ -38,28 +38,22 @@ all:
       hosts:
         prox1:
           ansible_host: prox1
-          ansible_user: dhalem
+          ansible_user: root
         prox2:
           ansible_host: prox2
-          ansible_user: dhalem
+          ansible_user: root
         prox3:
           ansible_host: prox3
-          ansible_user: dhalem
+          ansible_user: root
     network_infrastructure:
       hosts:
         pfsense:
           ansible_host: 192.168.2.1
           ansible_user: admin
-          ansible_connection: httpapi
-          ansible_httpapi_host: 192.168.2.1
-          ansible_httpapi_port: 443
-          ansible_httpapi_use_ssl: true
-          ansible_httpapi_validate_certs: false
-          ansible_network_os: pfsense
+          ansible_connection: ssh
         unifi:
           ansible_host: networkbot
           ansible_user: dhalem
-          unifi_url: https://networkbot:8443
           unifi_port: 8443
           ansible_connection: local
       vars:

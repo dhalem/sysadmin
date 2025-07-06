@@ -1,0 +1,90 @@
+- name: Test pfSense HTTP connectivity and basic operations
+  hosts: pfsense
+  gather_facts: false
+  connection: local
+  vars:
+    pfsense_username: '{{ vault_pfsense_user | default("admin") }}'
+    pfsense_password: '{{ vault_pfsense_password | default("") }}'
+    pfsense_url: https://{{ ansible_host }}
+    pfsense_validate_certs: false
+  tasks:
+  - name: Test pfSense web interface connectivity
+    uri:
+      url: '{{ pfsense_url }}'
+      method: GET
+      validate_certs: '{{ pfsense_validate_certs }}'
+      status_code:
+      - 200
+      - 302
+      - 403
+    register: pfsense_web_test
+    tags: connectivity
+  - name: Display pfSense web connectivity result
+    debug:
+      msg: 'Status Code: {{ pfsense_web_test.status }}
+
+        URL: {{ pfsense_url }}
+
+        Accessible: {{ ''Yes'' if pfsense_web_test.status in [200, 302, 403] else ''No'' }}
+
+        '
+    tags: connectivity
+  - name: Test pfSense login (if web interface accessible)
+    uri:
+      url: '{{ pfsense_url }}/index.php'
+      method: POST
+      body_format: form-urlencoded
+      body:
+        usernamefld: '{{ pfsense_username }}'
+        passwordfld: '{{ pfsense_password }}'
+        login: Login
+      validate_certs: '{{ pfsense_validate_certs }}'
+      follow_redirects: false
+      status_code:
+      - 200
+      - 302
+      - 403
+    register: pfsense_login_test
+    when: pfsense_web_test.status in [200, 302, 403]
+    tags: auth
+  - name: Display pfSense authentication result
+    debug:
+      msg: 'Login Status: {{ pfsense_login_test.status if pfsense_login_test is defined else ''Not tested'' }}
+
+        Authentication: {{ ''Success'' if pfsense_login_test is defined and pfsense_login_test.status == 302 else ''Failed
+        or not tested'' }}
+
+        '
+    tags: auth
+  - name: Test pfSense XML-RPC interface (if accessible)
+    uri:
+      url: '{{ pfsense_url }}/xmlrpc.php'
+      method: POST
+      body: "<?xml version=\"1.0\"?>\n<methodCall>\n  <methodName>pfsense.host_firmware_version</methodName>\n  <params>\n\
+        \    <param>\n      <value><string>{{ pfsense_username }}</string></value>\n    </param>\n    <param>\n      <value><string>{{\
+        \ pfsense_password }}</string></value>\n    </param>\n  </params>\n</methodCall>\n"
+      headers:
+        Content-Type: text/xml
+      validate_certs: '{{ pfsense_validate_certs }}'
+      status_code:
+      - 200
+      - 404
+      - 500
+    register: pfsense_xmlrpc_test
+    when: pfsense_web_test.status in [200, 302, 403]
+    ignore_errors: true
+    tags: xmlrpc
+  - name: Display pfSense XML-RPC result
+    debug:
+      msg: 'XML-RPC Status: {{ pfsense_xmlrpc_test.status if pfsense_xmlrpc_test is defined else ''Not tested'' }}
+
+        XML-RPC Available: {{ ''Yes'' if pfsense_xmlrpc_test is defined and pfsense_xmlrpc_test.status == 200 else ''No or
+        not tested'' }}
+
+        '
+    tags: xmlrpc
+  - name: Overall pfSense connectivity test result
+    debug:
+      msg: "{{ '\u2705 pfSense connectivity successful' if pfsense_web_test.status in [200, 302, 403] else '\u274C pfSense\
+        \ connectivity failed' }}"
+    tags: test
