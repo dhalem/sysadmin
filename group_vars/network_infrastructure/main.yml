@@ -1,0 +1,7 @@
+network_monitoring_enabled: true
+pfsense_api_timeout: 30
+pfsense_backup_config: true
+unifi_validate_certs: false
+unifi_timeout: 30
+unifi_backup_enabled: true
+skip_ssh_hardening: true

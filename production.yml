@@ -45,6 +45,23 @@ all:
         prox3:
           ansible_host: prox3
           ansible_user: dhalem
+    network_infrastructure:
+      hosts:
+        pfsense:
+          ansible_host: 192.168.2.1
+          ansible_user: admin
+          ansible_connection: httpapi
+          ansible_httpapi_host: 192.168.2.1
+          ansible_httpapi_port: 443
+          ansible_httpapi_use_ssl: true
+          ansible_httpapi_validate_certs: false
+          ansible_network_os: pfsense
+        unifi:
+          ansible_host: networkbot
+          ansible_user: dhalem
+          unifi_url: https://networkbot:8443
+          unifi_port: 8443
+          ansible_connection: local
       vars:
         kuma_server_url: http://networkbot:3001
         kuma_admin_username: admin

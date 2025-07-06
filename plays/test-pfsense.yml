@@ -1,0 +1,27 @@
+- name: Test pfSense connectivity and basic operations
+  hosts: pfsense
+  gather_facts: false
+  vars:
+    ansible_httpapi_user: '{{ vault_pfsense_user | default(''admin'') }}'
+    ansible_httpapi_pass: '{{ vault_pfsense_password | default('''') }}'
+  tasks:
+  - name: Get pfSense system information
+    pfsensible.core.pfsense_setup: null
+    register: pfsense_info
+    tags: info
+  - name: Display pfSense information
+    debug:
+      msg: 'Hostname: {{ pfsense_info.pfsense_setup.system.hostname | default(''Unknown'') }}
+
+        Version: {{ pfsense_info.pfsense_setup.system.version | default(''Unknown'') }}
+
+        Platform: {{ pfsense_info.pfsense_setup.system.platform | default(''Unknown'') }}
+
+        Uptime: {{ pfsense_info.pfsense_setup.system.uptime | default(''Unknown'') }}
+
+        '
+    tags: info
+  - name: Test pfSense API connectivity
+    debug:
+      msg: "\u2705 pfSense API connection successful"
+    tags: test

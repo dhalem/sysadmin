@@ -1,0 +1,58 @@
+- name: Test UniFi Controller connectivity and basic operations
+  hosts: unifi
+  gather_facts: false
+  connection: local
+  vars:
+    unifi_username: '{{ vault_unifi_username | default('''') }}'
+    unifi_password: '{{ vault_unifi_password | default('''') }}'
+    unifi_url: '{{ unifi_url }}'
+    unifi_validate_certs: false
+  tasks:
+  - name: Test UniFi API login
+    uri:
+      url: '{{ unifi_url }}/api/login'
+      method: POST
+      body_format: json
+      body:
+        username: '{{ unifi_username }}'
+        password: '{{ unifi_password }}'
+      validate_certs: '{{ unifi_validate_certs }}'
+      status_code:
+      - 200
+      - 400
+    register: unifi_login
+    tags: login
+  - name: Get UniFi site information (if login successful)
+    uri:
+      url: '{{ unifi_url }}/api/self/sites'
+      method: GET
+      validate_certs: '{{ unifi_validate_certs }}'
+      headers:
+        Cookie: '{{ unifi_login.set_cookie if unifi_login.status == 200 else '''' }}'
+    register: unifi_sites
+    when: unifi_login.status == 200
+    tags: info
+  - name: Display UniFi information
+    debug:
+      msg: 'Status: {{ ''Connected'' if unifi_login.status == 200 else ''Authentication Failed'' }}
+
+        Sites: {{ unifi_sites.json.data | length if unifi_sites is defined and unifi_sites.json is defined else ''N/A'' }}
+
+        URL: {{ unifi_url }}
+
+        '
+    tags: info
+  - name: UniFi logout
+    uri:
+      url: '{{ unifi_url }}/api/logout'
+      method: POST
+      validate_certs: '{{ unifi_validate_certs }}'
+      headers:
+        Cookie: '{{ unifi_login.set_cookie if unifi_login.status == 200 else '''' }}'
+    when: unifi_login.status == 200
+    tags: logout
+  - name: Test UniFi API connectivity result
+    debug:
+      msg: "{{ '\u2705 UniFi API connection successful' if unifi_login.status == 200 else '\u274C UniFi API connection failed'\
+        \ }}"
+    tags: test

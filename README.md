@@ -15,14 +15,19 @@ Following Ansible best practices, this repository is organized as follows:
 ├── kuma-api-key.txt          # Kuma API key reference
 ├── group_vars/               # Variables for groups
 │   ├── all/                 # Variables for all hosts
-│   └── kuma_monitors/       # Variables for monitoring group
-│       └── kuma.yml        # Kuma-specific configuration
+│   ├── kuma_monitors/       # Variables for monitoring group
+│   │   └── kuma.yml        # Kuma-specific configuration
+│   └── network_infrastructure/ # Variables for network devices
+│       ├── main.yml        # Network device configuration
+│       └── vault.yml       # Encrypted network credentials
 ├── host_vars/               # Variables for specific hosts (create as needed)
 ├── plays/                   # Playbooks directory
 │   ├── ansible.cfg         # Ansible configuration
 │   ├── site.yml           # Master playbook
 │   ├── kuma-monitor-deploy.yml  # Legacy playbook (deprecated)
-│   └── test-connection.yml # Connection testing
+│   ├── test-connection.yml # Connection testing
+│   ├── test-pfsense.yml   # pfSense connectivity testing
+│   └── test-unifi.yml     # UniFi controller testing
 └── roles/                  # Roles directory
     ├── requirements.yml    # External role dependencies
     ├── external/          # External roles from Galaxy
@@ -54,6 +59,30 @@ Following Ansible best practices, this repository is organized as follows:
 3. **Uptime Kuma Server**: Running on `networkbot:3001`
 
 4. **SSH Access**: Configured for target machines
+
+5. **Network Infrastructure Access**:
+   - pfSense Router at `192.168.2.1` (API access)
+   - UniFi Controller at `networkbot:8443` (API access)
+
+## Infrastructure Overview
+
+This repository manages **15 devices** across **4 logical groups**:
+
+### **kuma_monitors (8 hosts)**
+- **tahoepi1, tahoepi2** - Raspberry Pi devices
+- **plexvan** - Media server
+- **networkbot** - Kuma monitoring server
+- **arrbot, devbot, musicbot, videobot** - Service automation bots
+
+### **synology_nas (2 hosts)**
+- **forge, fortress** - Synology NAS devices
+
+### **proxmox_hosts (3 hosts)**
+- **prox1, prox2, prox3** - Proxmox virtualization hosts
+
+### **network_infrastructure (2 devices)**
+- **pfsense** - Router/Firewall at `192.168.2.1` (HTTP API)
+- **unifi** - Network Controller at `networkbot:8443` (HTTP API)
 
 ## Quick Start
 
